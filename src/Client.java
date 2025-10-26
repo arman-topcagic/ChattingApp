@@ -1,8 +1,6 @@
 import java.io.*;
 import java.net.*;
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
+import java.util.Scanner;
 
 public class Client {
     private static final String SERVER_ADDRESS = "localhost";
@@ -11,52 +9,11 @@ public class Client {
     private Socket socket;
     private PrintWriter out;
     private BufferedReader in;
-
-    // Swing components
-    private JFrame frame;
-    private JTextArea chatArea;
-    private JTextField inputField;
-    private JButton sendButton;
     private String username;
 
     public Client() {
-        setupGUI();
         connectToServer();
-    }
-
-    private void setupGUI() {
-        frame = new JFrame("Chat Client");
-        frame.setSize(500, 400);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        chatArea = new JTextArea();
-        chatArea.setEditable(false);
-        chatArea.setLineWrap(true);
-        JScrollPane scrollPane = new JScrollPane(chatArea);
-
-        inputField = new JTextField();
-        sendButton = new JButton("Send");
-
-        JPanel inputPanel = new JPanel(new BorderLayout());
-        inputPanel.add(inputField, BorderLayout.CENTER);
-        inputPanel.add(sendButton, BorderLayout.EAST);
-
-        frame.add(scrollPane, BorderLayout.CENTER);
-        frame.add(inputPanel, BorderLayout.SOUTH);
-
-        // When pressing Enter or clicking Send
-        ActionListener sendAction = e -> {
-            String message = inputField.getText().trim();
-            if (!message.isEmpty()) {
-                out.println(message);
-                inputField.setText("");
-            }
-        };
-
-        sendButton.addActionListener(sendAction);
-        inputField.addActionListener(sendAction);
-
-        frame.setVisible(true);
+        startChat();
     }
 
     private void connectToServer() {
@@ -65,31 +22,44 @@ public class Client {
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-            // Get username using dialog
-            username = JOptionPane.showInputDialog(frame, "Enter your username:");
-            if (username == null || username.trim().isEmpty()) {
-                username = "Anonymous";
-            }
+            Scanner scanner = new Scanner(System.in);
+            System.out.print("Enter your username: ");
+            username = scanner.nextLine().trim();
+            if (username.isEmpty()) username = "Anonymous";
 
-            // Thread for incoming messages
+            // Send username to server
+            out.println(username);
+
+            // Thread to listen for incoming messages
             new Thread(() -> {
                 try {
                     String line;
                     while ((line = in.readLine()) != null) {
-                        chatArea.append(line + "\n");
+                        System.out.println(line);
                     }
                 } catch (IOException e) {
-                    chatArea.append("Connection lost.\n");
+                    System.out.println("Connection lost.");
                 }
             }).start();
 
         } catch (IOException e) {
-            JOptionPane.showMessageDialog(frame, "Unable to connect to server.", "Error", JOptionPane.ERROR_MESSAGE);
+            System.out.println("Unable to connect to server.");
             e.printStackTrace();
+            System.exit(0);
+        }
+    }
+
+    private void startChat() {
+        Scanner scanner = new Scanner(System.in);
+        while (true) {
+            String message = scanner.nextLine();
+            if (!message.trim().isEmpty()) {
+                out.println(message);
+            }
         }
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(Client::new);
+        new Client();
     }
 }

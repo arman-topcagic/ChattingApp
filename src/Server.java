@@ -26,7 +26,6 @@ public class Server {
                 Socket clientSocket = serverSocket.accept();
                 System.out.println("New client connected: " + clientSocket);
 
-                // Create a new client handler for the connected client
                 ClientHandler clientHandler = new ClientHandler(clientSocket);
                 clients.add(clientHandler);
                 new Thread(clientHandler).start();
@@ -36,7 +35,6 @@ public class Server {
         }
     }
 
-    // Broadcast a message to all clients
     public static void broadcast(String message, ClientHandler sender) {
         for (ClientHandler client : clients) {
             if (client != sender) {
@@ -45,7 +43,6 @@ public class Server {
         }
     }
 
-    // Internal class to handle client connections
     private static class ClientHandler implements Runnable {
         private Socket clientSocket;
         private PrintWriter out;
@@ -54,7 +51,6 @@ public class Server {
 
         public ClientHandler(Socket socket) {
             this.clientSocket = socket;
-
             try {
                 out = new PrintWriter(clientSocket.getOutputStream(), true);
                 in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
@@ -66,12 +62,11 @@ public class Server {
         @Override
         public void run() {
             try {
-                // Get the username from the client
                 out.println("Enter your username:");
                 username = in.readLine();
                 System.out.println("User " + username + " connected.");
                 out.println("Welcome to the chat, " + username + "!");
-                out.println("Type Your Message");
+                out.println("Type your message:");
 
                 String inputLine;
                 while ((inputLine = in.readLine()) != null) {
@@ -79,7 +74,6 @@ public class Server {
                     broadcast("[" + username + "]: " + inputLine, this);
                 }
 
-                // Remove the client handler from the list
                 clients.remove(this);
                 System.out.println("User " + username + " disconnected.");
             } catch (IOException e) {
