@@ -1,0 +1,1 @@
+java -cp H:\Development\IntelliJ\ChattingApp\out\production\ChattingApp Client
