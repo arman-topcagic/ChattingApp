@@ -1,96 +1,61 @@
 import java.io.*;
 import java.net.*;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.Scanner;
 
 public class Server {
-    private static final int PORT = 12346;
-    private static CopyOnWriteArrayList<ClientHandler> clients = new CopyOnWriteArrayList<>();
+    private static final int PORT = 5000;
 
     public static void main(String[] args) {
-        try {
-            ServerSocket serverSocket = new ServerSocket(PORT);
-            System.out.println("Server is running and waiting for connections...");
+        final ServerSocket serverSocket;
+        final Socket clientSocket;
+        final BufferedReader in;
+        final PrintWriter out;
+        final Scanner scan = new Scanner(System.in);
 
-            // Thread to handle server admin input
-            new Thread(() -> {
-                Scanner scanner = new Scanner(System.in);
-                while (true) {
-                    String serverMessage = scanner.nextLine();
-                    broadcast("[Server]: " + serverMessage, null);
+        try{
+            serverSocket = new ServerSocket(PORT);
+            clientSocket = serverSocket.accept();
+            out = new PrintWriter(clientSocket.getOutputStream());
+            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+
+            Thread send = new Thread(new Runnable() {
+                String message;
+                @Override
+                public void run() {
+                    while(true){
+                        message = scan.nextLine();
+                        out.println(message);
+                        out.flush();
+                    }
                 }
-            }).start();
+            });
+            send.start();
 
-            // Accept incoming connections
-            while (true) {
-                Socket clientSocket = serverSocket.accept();
-                System.out.println("New client connected: " + clientSocket);
+            Thread receive = new Thread(new Runnable() {
+                String message;
+                @Override
+                public void run() {
+                    try{
+                        message = in.readLine();
 
-                ClientHandler clientHandler = new ClientHandler(clientSocket);
-                clients.add(clientHandler);
-                new Thread(clientHandler).start();
-            }
+                        while(message != null){
+                            System.out.println("Client: " + message);
+                            message = in.readLine();
+                        }
+
+                        System.out.println("Client disconnected.");
+
+                        out.close();
+                        clientSocket.close();
+                        serverSocket.close();
+                    } catch (IOException e){
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
+            receive.start();
         } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void broadcast(String message, ClientHandler sender) {
-        for (ClientHandler client : clients) {
-            if (client != sender) {
-                client.sendMessage(message);
-            }
-        }
-    }
-
-    private static class ClientHandler implements Runnable {
-        private Socket clientSocket;
-        private PrintWriter out;
-        private BufferedReader in;
-        private String username;
-
-        public ClientHandler(Socket socket) {
-            this.clientSocket = socket;
-            try {
-                out = new PrintWriter(clientSocket.getOutputStream(), true);
-                in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        @Override
-        public void run() {
-            try {
-                out.println("Enter your username:");
-                username = in.readLine();
-                System.out.println("User " + username + " connected.");
-                out.println("Welcome to the chat, " + username + "!");
-                out.println("Type your message:");
-
-                String inputLine;
-                while ((inputLine = in.readLine()) != null) {
-                    System.out.println("[" + username + "]: " + inputLine);
-                    broadcast("[" + username + "]: " + inputLine, this);
-                }
-
-                clients.remove(this);
-                System.out.println("User " + username + " disconnected.");
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                try {
-                    in.close();
-                    out.close();
-                    clientSocket.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        public void sendMessage(String message) {
-            out.println(message);
+            throw new RuntimeException(e);
         }
     }
 }
