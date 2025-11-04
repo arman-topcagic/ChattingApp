@@ -1,56 +1,62 @@
-import java.io.*;
-import java.net.*;
-import java.util.Scanner;
+    import java.io.*;
+    import java.net.*;
+    import java.util.Scanner;
 
-public class Client {
-       public static void main(String[] args) {
-           final Socket clientSocket;
-           final BufferedReader in;
-           final PrintWriter out;
-           final Scanner scan = new Scanner(System.in);
+    public class Client {
+           public static void main(String[] args) {
+               final Socket clientSocket;
+               final BufferedReader in;
+               final PrintWriter out;
+               final Scanner scan = new Scanner(System.in);
 
-           try {
-               clientSocket = new Socket("127.0.0.1", 5000);
-               out = new PrintWriter(clientSocket.getOutputStream());
-               in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+               System.out.println("Enter username: ");
+               String username = scan.nextLine();
 
-               Thread send = new Thread(new Runnable() {
-                   String message;
-                   @Override
-                   public void run() {
-                       while(true){
-                           message = scan.nextLine();
-                           out.println(message);
-                           out.flush();
-                       }
-                   }
-               });
-               send.start();
+               try {
+                   clientSocket = new Socket("127.0.0.1", 5000);
+                   out = new PrintWriter(clientSocket.getOutputStream());
+                   in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
-               Thread receive = new Thread(new Runnable() {
-                   String message;
-                   @Override
-                   public void run() {
-                       try{
-                           message = in.readLine();
-                           while(message != null){
-                               System.out.println("Server: " + message);
-                               message = in.readLine();
+                   out.println(username);
+                   out.flush();
+
+                   Thread send = new Thread(new Runnable() {
+                       String message;
+                       @Override
+                       public void run() {
+                           while(true){
+                               message = scan.nextLine();
+                               out.println(message);
+                               out.flush();
                            }
-
-                           System.out.println("Server offline.");
-
-                           out.close();
-                           clientSocket.close();
-                       } catch (IOException e){
-                           throw new RuntimeException(e);
                        }
-                   }
-               });
-               receive.start();
-           } catch (IOException e) {
-               throw new RuntimeException(e);
-           }
+                   });
+                   send.start();
 
+                   Thread receive = new Thread(new Runnable() {
+                       String message;
+                       @Override
+                       public void run() {
+                           try{
+                               message = in.readLine();
+                               while(message != null){
+                                   System.out.println("Server: " + message);
+                                   message = in.readLine();
+                               }
+
+                               System.out.println("Server offline.");
+
+                               out.close();
+                               clientSocket.close();
+                           } catch (IOException e){
+                               throw new RuntimeException(e);
+                           }
+                       }
+                   });
+                   receive.start();
+               } catch (IOException e) {
+                   throw new RuntimeException(e);
+               }
+
+        }
     }
-}

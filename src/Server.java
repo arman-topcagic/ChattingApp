@@ -33,13 +33,15 @@ public class Server {
 
             Thread receive = new Thread(new Runnable() {
                 String message;
+                String username;
                 @Override
                 public void run() {
                     try{
+                        username = in.readLine();
                         message = in.readLine();
 
                         while(message != null){
-                            System.out.println("Client: " + message);
+                            System.out.println(username + ": " + message);
                             message = in.readLine();
                         }
 
