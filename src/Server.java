@@ -14,17 +14,26 @@ public class Server {
 
         try{
             serverSocket = new ServerSocket(PORT);
+            System.out.println("Started server on port " + PORT);
+
             clientSocket = serverSocket.accept();
+            System.out.println("Client connected with address: " + clientSocket.getInetAddress());
+
             out = new PrintWriter(clientSocket.getOutputStream());
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
             Thread send = new Thread(new Runnable() {
-                String message;
+                String input;
                 @Override
                 public void run() {
                     while(true){
-                        message = scan.nextLine();
-                        out.println(message);
+                        input = scan.nextLine();
+                        if(input.startsWith("say ")){
+                            out.println(input = input.substring(4));
+                        } else if (input.startsWith("something ")) {
+                            //idk
+                        }
+
                         out.flush();
                     }
                 }

@@ -14,6 +14,7 @@
 
                try {
                    clientSocket = new Socket("127.0.0.1", 5000);
+
                    out = new PrintWriter(clientSocket.getOutputStream());
                    in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
