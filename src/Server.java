@@ -2,7 +2,6 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-//Remaking the server.java so that it's not as messy as the current one.
 public class Server {
     private ServerSocket serverSocket;
     private static final int PORT = 5000;
