@@ -73,7 +73,7 @@ public class ClientHandler implements Runnable {
                 socket.close();
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.print("An error occurred while trying to disconnect a client.");
         }
     }
 }
