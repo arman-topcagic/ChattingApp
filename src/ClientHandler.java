@@ -1,5 +1,6 @@
 import java.io.*;
 import java.net.Socket;
+import java.util.ArrayList;
 
 public class ClientHandler implements Runnable {
     private Socket clientSocket;
@@ -7,30 +8,44 @@ public class ClientHandler implements Runnable {
     private PrintWriter out;
     private String username;
 
+    public static ArrayList<ClientHandler> clients = new ArrayList<>();
+
     public ClientHandler(Socket socket){
-        this.clientSocket = socket;
+        try {
+            this.clientSocket = socket;
+
+            this.out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()));
+            this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            this.username = in.readLine();
+
+            clients.add(this);
+            broadcast("SERVER: " + username + " has connected to the server!");
+        } catch (Exception e) {
+            closeEverything(socket, in, out);
+        }
     }
 
     @Override
     public void run() {
-        try {
-            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            out = new PrintWriter(clientSocket.getOutputStream(), true);
+        while(clientSocket.isConnected()){
+            try {
+                String message;
 
-            //Hämtar användarnamnet
-            username = in.readLine();
-            System.out.println(username+" connected to the server.");
+                message = in.readLine();
+                broadcast(message);
 
-            String message;
-            while ((message = in.readLine()) != null){
-                System.out.println(username + ": " + message);
+            } catch (IOException e){
+                closeEverything(socket, in, out);
+                break;
             }
+        }
+    }
 
-            System.out.println(username + " disconnected.");
-            clientSocket.close();
+    public void broadcast(String sentMessage){
+        for (ClientHandler clientHandler : clients){
+            if(!clientHandler.username.equals(username)){
 
-        } catch (IOException e){
-            e.printStackTrace();
+            }
         }
     }
 }

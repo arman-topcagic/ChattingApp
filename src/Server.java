@@ -1,8 +1,11 @@
+import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.Socket;
 
 //Remaking the server.java so that it's not as messy as the current one.
 public class Server {
     private ServerSocket serverSocket;
+    private static final int PORT = 5000;
 
     public Server(ServerSocket serverSocket){
         this.serverSocket = serverSocket;
@@ -13,8 +16,33 @@ public class Server {
 
             while (!serverSocket.isClosed()){
                 Socket socket = serverSocket.accept();
+                System.out.println("A new client connected from " + socket.getInetAddress());
+                ClientHandler clientHandler = new ClientHandler(socket);
+
+                Thread thread = new Thread(clientHandler);
+                thread.start();
             }
 
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
+    }
+
+    public void closeServerSocket(){
+        try {
+            if (serverSocket != null){
+                serverSocket.close();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void main (String[] args) throws IOException {
+        ServerSocket serverSocket = new ServerSocket(5000);
+        Server server = new Server(serverSocket);
+        server.startServer();
+
+
     }
 }
