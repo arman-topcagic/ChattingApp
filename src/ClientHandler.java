@@ -44,12 +44,13 @@ public class ClientHandler implements Runnable {
     public void broadcast(String sentMessage){
         for (ClientHandler clientHandler : clients){
             try {
-                if(!clientHandler.username.equals(username)){
+                if (!clientHandler.username.equals(username)){
                     clientHandler.out.write(sentMessage);
                     clientHandler.out.newLine();
                     clientHandler.out.flush();
                 }
             } catch (IOException e){
+                removeClients();
                 closeEverything(clientSocket, in, out);
             }
         }

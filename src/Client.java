@@ -1,6 +1,6 @@
+import javax.swing.*;
 import java.io.*;
 import java.net.Socket;
-import java.util.Scanner;
 
 public class Client {
 
@@ -20,40 +20,26 @@ public class Client {
         }
     }
 
-    public void sendMessage() {
+    public void sendMessage(String message) {
         try {
-            out.write(username);
+            out.write(username + ": " + message);
             out.newLine();
             out.flush();
-
-            Scanner scan = new Scanner(System.in);
-            while (socket.isConnected()) {
-                String messageToSend = scan.nextLine();
-                out.write(username + ": " + messageToSend);
-                out.newLine();
-                out.flush();
-            }
         } catch (Exception e) {
             closeEverything(socket, in, out);
         }
     }
 
-    public void listenForMessage() {
-        new Thread(new Runnable() {
-            @Override
-            public void run(){
-                String messageFromChat;
-
-                while (socket.isConnected()) {
-                    try {
-                        messageFromChat = in.readLine();
-                        System.out.println(messageFromChat);
-                    } catch (IOException e) {
-                        closeEverything(socket, in, out);
-                    }
-                }
+    public void listenForMessage(JTextArea chatArea) {
+        try {
+            String messageFromChat;
+            while ((messageFromChat = in.readLine()) != null) {
+                String finalMessage = messageFromChat;
+                SwingUtilities.invokeLater(() -> chatArea.append(finalMessage + "\n"));
             }
-        }).start();
+        } catch (IOException e) {
+            closeEverything(socket, in, out);
+        }
     }
 
     public void closeEverything(Socket socket, BufferedReader in, BufferedWriter out) {
@@ -72,15 +58,7 @@ public class Client {
         }
     }
 
-    public static void main(String[] args) throws IOException {
-
-        Scanner scan = new Scanner(System.in);
-        System.out.println("Enter username: ");
-        String username = scan.nextLine();
-        Socket socket = new Socket("localhost", 5000);
-        Client client = new Client(socket, username);
-        client.listenForMessage();
-        client.sendMessage();
+    public String getUsername() {
+        return username;
     }
-
 }
