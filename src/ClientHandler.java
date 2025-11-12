@@ -19,7 +19,7 @@ public class ClientHandler implements Runnable {
             this.username = in.readLine();
 
             clients.add(this);
-            broadcast("SERVER: " + username + " has connected to the server!");
+            broadcast("\nSERVER: " + username + " has connected to the server!\n");
         } catch (Exception e) {
             closeEverything(socket, in, out);
         }
@@ -42,6 +42,7 @@ public class ClientHandler implements Runnable {
     }
 
     public void broadcast(String sentMessage){
+        if (sentMessage == null) return; // Prevent null writes
         for (ClientHandler clientHandler : clients){
             try {
                 if (!clientHandler.username.equals(username)){
@@ -56,9 +57,9 @@ public class ClientHandler implements Runnable {
         }
     }
 
-    public void removeClients(){
-        clients.remove(this);
+    public void removeClients(){      
         broadcast("SERVER: " + username + " has left the chat.");
+        clients.remove(this);
     }
 
     public void closeEverything(Socket socket, BufferedReader in, BufferedWriter out){

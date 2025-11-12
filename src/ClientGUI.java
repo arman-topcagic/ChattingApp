@@ -53,8 +53,9 @@ public class ClientGUI {
 
     public static void main(String[] args) throws IOException {
         String username = JOptionPane.showInputDialog("Enter your desired username");
-        Socket socket = new Socket("192.168.0.180", 5000);
+        Socket socket = new Socket("localhost", 5000);
         Client client = new Client(socket, username);
+
         SwingUtilities.invokeLater(() -> new ClientGUI(client));
     }
 }
