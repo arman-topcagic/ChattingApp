@@ -6,6 +6,7 @@ import java.net.Socket;
 
 public class ClientGUI {
     private final JTextArea chatArea;
+    private final JTextArea clientArea;
     private final JTextField inputField;
     private final JButton sendButton;
     private final Client client;
@@ -14,7 +15,7 @@ public class ClientGUI {
         this.client = client;
 
         JFrame window = new JFrame("Chat Client - " + client.getUsername());
-        window.setSize(600, 800);
+        window.setSize(800, 800);
         window.setLocationRelativeTo(null);
         window.setResizable(false);
         window.setLayout(new BorderLayout());
@@ -22,10 +23,23 @@ public class ClientGUI {
 
         chatArea = new JTextArea();
         chatArea.setEditable(false);
+        chatArea.setBackground(Color.decode("#1e1f22"));
+        chatArea.setForeground(Color.WHITE);
         JScrollPane scrollPane = new JScrollPane(chatArea);
 
+        clientArea = new JTextArea();
+        clientArea.setPreferredSize(new Dimension(200, 800));
+        clientArea.setEditable(false);
+        clientArea.setBackground(Color.decode("#1e1f22"));
+        clientArea.setForeground(Color.WHITE);
+        JScrollPane scrollPane1 = new JScrollPane(clientArea);
+
         inputField = new JTextField();
-        sendButton = new JButton("Send");
+        inputField.setPreferredSize(new Dimension(0,60));
+        inputField.setBackground(Color.decode("#2b2d30"));
+        inputField.setForeground(Color.WHITE);
+        sendButton = new JButton("( Send )");
+        sendButton.setBackground(Color.decode("#3e80d7"));
 
         JPanel inputPanel = new JPanel(new BorderLayout());
         inputPanel.add(inputField, BorderLayout.CENTER);
@@ -33,6 +47,7 @@ public class ClientGUI {
 
         window.add(scrollPane, BorderLayout.CENTER);
         window.add(inputPanel, BorderLayout.SOUTH);
+        window.add(clientArea, BorderLayout.EAST);
 
         sendButton.addActionListener(e -> sendMessage());
         inputField.addActionListener(e -> sendMessage());
